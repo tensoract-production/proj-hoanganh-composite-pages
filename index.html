@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta name="robots" content="noindex, nofollow">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sơ đồ vận hành nhà máy Hoàng Anh Composite</title>
+<style>
+  :root{
+    --ink:#1B2430; --text:#2E3844; --muted:#6C7683; --line:#E1E6EC; --bg:#F4F6F8;
+    --gate:#E9A825; --gate-bg:#FFF7E0; --gate-ink:#5E4200;
+    --meet:#7A64C8; --meet-bg:#F0EDFA; --meet-ink:#3B2D7A;
+    --doc-out:#1F4E82; --doc-out-bg:#E4EFFA; --doc-line:#A9C4E0;
+    --erp:#B83280; --erp-bg:#FDF2F8; --erp-ink:#702459;
+    --flow:#7B6E62; --ng:#D64545; --paper:#F6F2EA; --grid:#ECE6DA; --edge:#C7B9A5;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--paper);color:var(--text);font:14px/1.4 Inter,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+
+  .top{flex:0 0 auto;z-index:30;background:#fff;border-bottom:1px solid var(--line);padding:8px 20px;display:flex;align-items:center;gap:22px;position:relative}
+  .top h1{margin:0;font-size:17px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .nav{display:flex;gap:6px}
+  .nav a{font-size:13px;padding:5px 13px;border-radius:999px;color:#fff;text-decoration:none;opacity:.8;white-space:nowrap}
+  .legendbox{display:none;position:absolute;top:100%;right:20px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(20,30,40,.14);padding:14px 18px;z-index:40;width:560px}
+  .legendbox.on{display:block}
+  .legendbox .sub{color:var(--muted);font-size:13px;margin-bottom:10px;line-height:1.45}
+  .nav a:hover,.nav a.here{opacity:1;box-shadow:0 0 0 2px #fff,0 0 0 3.5px currentColor}
+  .sp{flex:1}
+  .btn{font:inherit;font-size:13.5px;padding:6px 12px;border:1px solid var(--line);background:#fff;border-radius:6px;cursor:pointer;color:var(--ink)}
+  .btn.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;font-size:13.5px;color:var(--text)}
+  .legend span{display:inline-flex;align-items:center;gap:9px}
+  .k{flex:0 0 auto;width:30px;height:17px;border-radius:3px;border:1px solid #BFC8D2;background:#fff;display:inline-block;position:relative}
+  .k.gate{background:var(--gate);border:none;clip-path:polygon(22% 0,78% 0,100% 50%,78% 100%,22% 100%,0 50%)}
+  .k.gate::after{content:"";position:absolute;inset:2px;background:var(--gate-bg);clip-path:polygon(22% 0,78% 0,100% 50%,78% 100%,22% 100%,0 50%)}
+  .k.meet{background:var(--meet-bg);border-color:var(--meet);border-radius:999px}
+  .k.term{background:#7B3F2E;border:none;border-radius:999px}
+  .k.ng{border:none;border-top:2px dashed var(--ng);height:0;border-radius:0}
+  .k.flow{border:none;border-top:2px solid var(--flow);height:0;border-radius:0}
+  .k.out{border-color:#9DBEE0;background:var(--doc-out-bg);height:18px;width:14px;border-radius:2px}
+  .k.din{border-color:#C9D3DE;background:#fff;height:18px;width:14px;border-radius:2px}
+  .k.dl{border:none;border-top:2px dotted var(--doc-line);height:0;border-radius:0}
+
+  .main{flex:1 1 auto;display:flex;min-height:0}
+  .wrap{flex:1 1 auto;overflow:auto;position:relative;padding:0 0 40px;scrollbar-width:none;cursor:grab}
+  .wrap::-webkit-scrollbar{display:none}
+  .wrap.drag{cursor:grabbing;user-select:none}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .card.chartcard{overflow:visible;border:none;border-radius:0;display:inline-block;min-width:100%;background:var(--paper)}
+
+  /* lưới */
+  .chart{position:relative}
+  .colhead{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1.5px solid var(--edge);display:flex;height:60px}
+  .colhead .h{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;border-left:1.5px solid var(--edge);padding:0 8px}
+  .colhead .h b{font-size:14.5px;color:var(--ink);line-height:1.15}
+  .colhead .h small{font-size:12px;color:var(--muted);line-height:1.15;margin-top:2px}
+  .colhead .h .bar{width:34px;height:4px;border-radius:2px;margin-bottom:5px}
+  .colhead .h.side{align-items:flex-start;text-align:left;padding-left:14px;border-left:none}
+  .colhead .h.side b{font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .colhead .h.side small{margin-top:3px}
+  .colhead .h.phh{position:sticky;left:0;z-index:2;background:#fff;border-left:none}
+  .body{position:relative;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:30px 30px;background-position:-1px -1px}
+  .colbg{position:absolute;top:0;bottom:0;border-left:1.5px solid var(--edge)}
+  .colbg.alt{background:none}
+  /* sổ bước bám mép trái, chỉ hiện khi đã cuộn ngang qua khỏi lưới phòng ban */
+  .idxwrap{position:absolute;left:0;top:0;pointer-events:none;z-index:6;display:none}
+  .wrap.xs .idxwrap{display:block}
+  .idxwrap .idx{position:sticky;height:100%;background:#fff;border-right:1px solid var(--line);box-shadow:6px 0 12px rgba(20,30,40,.07);pointer-events:auto}
+  .idx .ir{position:absolute;left:0;right:0;display:flex;align-items:center;gap:10px;padding:0 12px 0 14px;cursor:pointer;border-bottom:1px solid #F0F3F6}
+  .idx .ir:hover,.idx .ir.sel{background:#F1F4F7}
+  .idx .n{flex:0 0 auto;min-width:27px;height:23px;padding:0 7px;border-radius:12px;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .idx .it{font-size:14px;line-height:1.15;font-weight:600;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .colhead .idxh{position:sticky;z-index:2;background:#fff;border-right:1px solid var(--line);display:none}
+  .wrap.xs .colhead .idxh{display:flex}
+  /* Pha: cột dọc bám mép trái, không cắt ngang luồng */
+  .ph{position:absolute;left:0;pointer-events:none;z-index:4}
+  .ph .lbl{position:sticky;left:0;height:100%;display:flex;align-items:center;justify-content:center;color:#fff;writing-mode:vertical-rl;transform:rotate(180deg);font-size:15.5px;font-weight:700;white-space:nowrap;letter-spacing:.2px;padding:16px 0;pointer-events:auto}
+  .ph .lbl small{font-weight:500;font-size:14px;opacity:.92;margin-top:10px}
+  .ph .lbl .tag{font-weight:500;font-size:12.5px;opacity:.9;margin-top:12px;background:rgba(255,255,255,.22);padding:10px 3px;border-radius:999px}
+  .phsep{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--edge)}
+  .rowline{display:none}
+  .rowsel{position:absolute;left:0;right:0;background:rgba(27,36,48,.045);z-index:0;display:none}
+
+  .node{position:absolute;background:#fff;border:1.5px solid #8D7F70;border-radius:12px;padding:10px 12px 14px 16px;cursor:pointer;box-shadow:3px 3px 0 rgba(141,127,112,.18);z-index:3;display:flex;align-items:center;gap:8px}
+  .node:hover{box-shadow:3px 3px 0 rgba(141,127,112,.18),0 6px 16px rgba(20,30,40,.14)}
+  .node.sel{box-shadow:0 0 0 2px var(--ink)}
+  .node .n{position:absolute;top:-12px;left:-12px;min-width:27px;height:23px;padding:0 7px;border-radius:12px;color:#fff;font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .node .tx{min-width:0}
+  .node .t{font-size:15px;line-height:1.22;font-weight:600;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .node .r{font-size:12.5px;color:var(--muted);line-height:1.2;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .node .ic{flex:0 0 auto;width:17px;height:17px}
+  .node.gate{background:none;border:none;box-shadow:none;padding:8px 16px 7px 22px}
+  .node.gate .hex{position:absolute;inset:0;width:100%;height:100%;z-index:0}
+  .node.gate .tx,.node.gate .ic{position:relative;z-index:1;color:var(--gate-ink)}
+  .node.gate .t{color:var(--gate-ink)}
+  .node.gate .n{background:#8A5A00 !important;left:4px;z-index:1}
+  .node.meet{background:var(--meet-bg);border-color:var(--meet);border-radius:30px;padding:10px 12px 9px 18px}
+  .node.meet .t{color:var(--meet-ink)}
+  .node.meet .ic{color:var(--meet-ink)}
+  .node.term{background:#7B3F2E;border:none;border-radius:30px;justify-content:center;text-align:center;box-shadow:3px 3px 0 rgba(123,63,46,.22)}
+  .node.term .t{color:#fff;letter-spacing:.3px}
+  /* lớp ERPNext: một màu hồng tím riêng, nhãn ở góc dưới phải mỗi ô; mức phủ phân biệt bằng kiểu viền */
+  .erp{position:absolute;bottom:-11px;right:12px;max-width:calc(100% - 44px);height:21px;padding:0 8px;border-radius:6px;font-size:11.5px;font-weight:700;line-height:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:2;background:var(--erp);color:#fff;border:1px solid var(--erp);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+  .erp.cfg{background:#fff;color:var(--erp-ink);border:1.5px solid var(--erp)}
+  .erp.app{background:var(--erp-bg);color:var(--erp-ink);border:1.5px dashed var(--erp)}
+  .erp.ext{background:#F3F4F6;color:#6B7280;border:1px dashed #9CA3AF;box-shadow:none}
+  .node.gate .erp{right:26px}
+  .node.term .erp{right:14px}
+  body.hide-erp .erp{display:none}
+  .legend .erp,.drawer .erp,.reg .erp{position:static;display:inline-block;height:19px;line-height:17px;font-size:11px;max-width:none;vertical-align:middle}
+  .legend .erp{margin-right:4px;flex:0 0 auto}
+  .drawer .erp{margin-right:8px}
+  .reg .erp{margin-right:6px}
+
+  /* vết hồ sơ: một làn cho mỗi hồ sơ từ lúc tạo tới lần dùng cuối */
+  .trace{position:absolute;z-index:3}
+  .trace .tl{position:absolute;left:50%;top:0;bottom:0;border-left:2.5px dotted var(--doc-line)}
+  .doc{font-size:13px;line-height:1.15;padding:4px 8px 4px 21px;border-radius:4px;position:relative;white-space:nowrap;color:var(--doc-out);border:1px solid #B7CFE8;background:var(--doc-out-bg);font-weight:600;cursor:default}
+  .doc::before{content:"";position:absolute;left:7px;top:5px;width:8px;height:10px;border:1px solid currentColor;border-radius:1px;opacity:.75}
+  .doc.in{background:#fff;color:#5A6572;border-color:#C9D3DE;font-weight:500}
+  .trace .doc{position:absolute;left:50%;transform:translate(-50%,-50%);max-width:182px;overflow:hidden;text-overflow:ellipsis}
+  .trace:hover .tl,.trace.hl .tl{border-color:var(--doc-out);border-style:solid}
+  .trace:hover .doc,.trace.hl .doc{box-shadow:0 0 0 2px #B7CFE8;z-index:1}
+  .trace.hl .doc.in{color:var(--doc-out);border-color:#9DBEE0}
+
+  svg.edges{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;z-index:2}
+  svg.edges .pill rect{fill:#fff;stroke:#8D7F70;stroke-width:1.2px}
+  svg.edges .pill text{font-size:13px;fill:#3D4752;font-weight:600}
+  body.hide-ng .ng{display:none}
+
+  .regs{padding:0 16px}
+  .reg{padding:14px 18px 18px;margin-top:22px}
+  .reg h2{margin:0 0 8px;font-size:17px;color:var(--ink)}
+  .reg table{border-collapse:collapse;width:100%;font-size:13.5px}
+  .reg th{text-align:left;font-weight:600;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.3px;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .reg td{padding:5px 8px;border-bottom:1px solid #F0F3F6;vertical-align:top}
+  .reg td.c{font-weight:600;white-space:nowrap}
+
+  .drawer{flex:0 0 0;width:0;overflow:hidden;background:#fff;border-left:1px solid var(--line);position:relative}
+  .drawer.open{flex-basis:410px;overflow:hidden auto}
+  .drawer .inner{width:409px;padding:18px 22px;overflow-wrap:anywhere}
+  .drawer .x{position:absolute;right:12px;top:8px;border:none;background:none;font-size:22px;cursor:pointer;color:var(--muted)}
+  .drawer h2{margin:4px 0 2px;font-size:17px;color:var(--ink)}
+  .drawer .kind{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .drawer dt{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:12px}
+  .drawer dd{margin:3px 0 0;font-size:14px}
+  .drawer .doc{display:inline-block;margin:2px 3px 2px 0;font-size:12.5px;white-space:normal}
+  .drawer .ngnote{color:var(--ng)}
+  .drawer .nx{display:inline-block;background:#EEF1F5;border-radius:4px;padding:2px 8px;margin:2px 3px 0 0;font-size:13.5px;cursor:pointer}
+  .drawer .nx:hover{background:#E1E6EC}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Sơ đồ vận hành nhà máy Hoàng Anh Composite</h1>
+  <div class="nav" id="nav"></div>
+  <div class="sp"></div>
+  <button class="btn" id="tg-lg">Chú giải</button>
+  <button class="btn" id="tg-ng">Ẩn đường NG</button>
+  <button class="btn" id="tg-erp">Ẩn ERPNext</button>
+  <div class="legendbox" id="lg"><div class="sub">Quy trình tiếp nhận, theo dõi và thực hiện đơn hàng theo HAC-QT-01. Đọc từ trên xuống, mỗi hàng một bước, mỗi cột một phòng ban. Kéo chuột hoặc Shift + lăn để cuộn ngang. Bấm một ô để xem chi tiết.</div>
+  <div class="legend">
+    <span><i class="k"></i> Bước công việc</span>
+    <span><i class="k gate"></i> Cổng kiểm tra, phê duyệt</span>
+    <span><i class="k meet"></i> Cuộc họp</span>
+    <span><i class="k term"></i> Bắt đầu, kết thúc</span>
+    <span><i class="k flow"></i> Đi tiếp</span>
+    <span><i class="k ng"></i> NG, quay về bước trước</span>
+    <span><i class="k out"></i> Hồ sơ tạo ra, cập nhật</span>
+    <span><i class="k din"></i> Hồ sơ đưa vào dùng</span>
+    <span><i class="k dl"></i> Vết một hồ sơ</span>
+    <span><i class="erp">Sales Order</i> ERPNext có sẵn</span>
+    <span><i class="erp cfg">DocType</i> ERPNext cấu hình</span>
+    <span><i class="erp app">Job Card</i> App Frappe riêng</span>
+    <span><i class="erp ext">VNACCS</i> Ngoài ERPNext</span>
+  </div></div>
+</div>
+<div class="main"><div class="wrap" id="wrap"><div class="card chartcard"><div class="chart" id="chart"></div></div><div class="regs" id="regs"></div></div>
+<aside class="drawer" id="dr"><div class="inner"><button class="x" id="drx" title="Đóng">×</button><div id="drc"></div></div></aside></div>
+
+<script>
+/* =====================================================================
+   DỮ LIỆU. Sửa ở đây, mở lại file là xong. Nguồn: HAC-QT-01, spec/1-brief/attachments.
+   Luật vẽ chung: tensoract-docs dev-docs/diagram-standard.md; phần riêng: standard/operating-flow.md của hub.
+   ===================================================================== */
+const DEPTS = [
+  { id:'kh',  name:'Khách hàng',         color:'#5B6B80', roles:[['kh','Khách hàng']] },
+  { id:'bgd', name:'Ban Giám đốc',       color:'#7B3FA0', roles:[['pgd','Phó Giám đốc']] },
+  { id:'kd',  name:'P. Kinh doanh',      color:'#2B6CB0', roles:[['tpkd','TP. Kinh doanh'],['nvkd','NV. Kinh doanh']] },
+  { id:'kt',  name:'P. Kế toán',         color:'#B7791F', roles:[['ktt','Kế toán trưởng'],['nvkt','NV. Kế toán']] },
+  { id:'pkt', name:'P. Kỹ thuật',        color:'#C53030', roles:[['tppkt','TP. Kỹ thuật'],['nvpkt','NV. Kỹ thuật']] },
+  { id:'pc',  name:'Điều phối đơn hàng', color:'#2C7A7B', roles:[['pc','NV. PC']] },
+  { id:'mk',  name:'Mua hàng, Kho',      color:'#9C4221', roles:[['mh','BP. Mua hàng'],['kho','Thủ kho']] },
+  { id:'qa',  name:'QA / QC',            color:'#2F855A', roles:[['qa','P. QA'],['qc','NV. QC']] },
+  { id:'sx',  name:'Sản xuất',           color:'#2D3748', roles:[['sx','Bộ phận Sản xuất']] },
+  { id:'hc',  name:'P. HC-NS',           color:'#718096', roles:[['hcns','P. HC-NS']] },
+];
+
+const PHASES = [
+  { id:1, name:'Tiếp nhận và báo giá',                   color:'#2B6CB0' },
+  { id:2, name:'Khởi tạo và lập kế hoạch đơn hàng',      color:'#7B3FA0' },
+  { id:3, name:'Mua hàng, kiểm đầu vào, nhập kho',       color:'#9C4221' },
+  { id:4, name:'Phát hành hồ sơ và triển khai sản xuất', color:'#2C7A7B' },
+  { id:5, name:'Kiểm soát thay đổi',                     color:'#C53030', cond:true },
+  { id:6, name:'Hoàn tất sản xuất và nghiệm thu',        color:'#2F855A' },
+  { id:7, name:'Đóng gói, xuất hàng, kết thúc',          color:'#2D3748' },
+];
+
+// Sổ biểu mẫu. Tên có (?) là suy từ vị trí trên lưu đồ, HAC chưa xác nhận.
+const FORMS = {
+  'HAC-PKT-01':'Biểu mẫu P. Kỹ thuật dùng ở bước 3 (?)', 'HAC-PKT-04':'Hướng dẫn chế tạo (HDCT)',
+  'HAC-PKT-05':'Tài liệu quản lý chất lượng, check sheet', 'HAC-PKT-06':'Biểu mẫu xuất hàng (?)',
+  'HAC-PKT-07':'Bảng tổng hợp vật tư phụ kiện', 'HAC-PKT-08':'Bảng tổng hợp trọng lượng',
+  'HAC-HC-01':'Biên bản họp', 'HAC-KT-01':'Phiếu nhập, kiểm tra NVL, chi tiết, phụ kiện (?)',
+  'HAC-KT-04':'Bảng tổng hợp chi phí đơn hàng', 'HAC-KT-05':'Đề xuất NVL, chi tiết phụ kiện cho sản xuất (?)',
+  'VT-02':'Phiếu nhập kho', 'BM-KD-05':'Yêu cầu sản xuất (YCSX)',
+  'Báo giá':'Báo giá gửi khách', 'Bản vẽ':'Bản vẽ của khách, sau đó là bản cuối cùng đã ban hành', 'PO':'Đơn đặt hàng của khách',
+  'HĐKT':'Hợp đồng kinh tế', 'Đề nghị tạm ứng':'Đề nghị tạm ứng', 'Tiến độ đơn hàng':'Bảng tiến độ đơn hàng',
+  'Tiến độ chế tạo':'Bảng tiến độ chế tạo', 'ITP':'Inspection and Test Plan', 'Hồ sơ sản xuất':'Bộ hồ sơ sản xuất phát cho xưởng',
+  'Inspection Report':'Inspection Report (IR)', 'Bản vẽ đóng kiện':'Bản vẽ đóng kiện', 'Biên bản nghiệm thu':'Biên bản nghiệm thu với khách',
+  'Packing List':'Packing List', 'Biên bản giao hàng':'Biên bản giao hàng', 'Phiếu xuất kho':'Phiếu xuất kho',
+  'Tờ khai hải quan':'Tờ khai hải quan', 'C/O':'Giấy chứng nhận xuất xứ', 'Invoice':'Invoice', 'Hồ sơ thanh toán':'Hồ sơ thanh toán',
+  'Yêu cầu báo giá':'Yêu cầu báo giá của khách', 'Thông tin thay đổi':'Yêu cầu thay đổi của khách', 'Phản hồi khách':'Phản hồi của khách về phương án thay đổi',
+};
+
+// Bước. s = nhãn ngắn trên ô (động từ + tân ngữ), title = tên đầy đủ theo HAC-QT-01.
+// col = cột trong Pha (song song thì trùng cột). kind: gate | meet | term. in/out = hồ sơ. with = cùng tham gia. ng = khi không đạt.
+const STEPS = [
+  { id:'1',  p:1, col:1, role:'kh',   kind:'term', s:'Bắt đầu', title:'Khách hàng gửi yêu cầu báo giá', out:['Yêu cầu báo giá'] },
+  { id:'2',  p:1, col:2, role:'nvkd', s:'Nhận yêu cầu báo giá', title:'Nhận yêu cầu báo giá', in:['Yêu cầu báo giá'] },
+  { id:'3',  p:1, col:3, role:'nvpkt',s:'Bóc tách vật tư, trọng lượng', title:'Phân tích bản vẽ, bóc tách khối lượng, lập bảng tổng hợp vật tư phụ kiện và bảng tổng hợp trọng lượng', in:['Bản vẽ'], out:['HAC-PKT-01','HAC-PKT-07','HAC-PKT-08'] },
+  { id:'4',  p:1, col:4, role:'nvkd', s:'Lập và gửi báo giá', title:'Làm báo giá, gửi khách hàng', in:['HAC-PKT-07','HAC-PKT-08'], out:['Báo giá'] },
+  { id:'5',  p:1, col:5, role:'nvkd', s:'Nhận PO và bản vẽ', title:'Nhận PO, bản vẽ, thông tin liên quan từ khách hàng', with:'Khách hàng', in:['PO','Bản vẽ'] },
+
+  { id:'6',  p:2, col:1, role:'ktt',  s:'Lập hợp đồng, đề nghị tạm ứng', title:'Nhận PO từ P. Kinh doanh, lập hợp đồng kinh tế và đề nghị tạm ứng', in:['PO'], out:['HĐKT','Đề nghị tạm ứng'], open:'HAC-QT-01 không vẽ bước 6 nối tiếp đi đâu' },
+  { id:'7',  p:2, col:1, role:'tpkd', s:'Gửi yêu cầu sản xuất', title:'Gửi yêu cầu sản xuất (YCSX) và bản vẽ', in:['PO','Bản vẽ'], out:['BM-KD-05'] },
+  { id:'8',  p:2, col:2, role:'pgd',  kind:'gate', s:'Chọn NV. PC phụ trách', title:'Chọn NV. PC phụ trách đơn hàng', in:['BM-KD-05'], ng:'Chưa chọn được thì chọn lại' },
+  { id:'9',  p:2, col:3, role:'nvkd', kind:'meet', s:'Họp kick-off đơn hàng', title:'Họp kick-off bắt đầu đơn hàng, viết biên bản họp', with:'P. HC-NS viết biên bản, các bộ phận liên quan', in:['BM-KD-05','Bản vẽ'], out:['HAC-HC-01'] },
+  { id:'10', p:2, col:4, role:'pc',   s:'Lập tiến độ đơn hàng, chế tạo', title:'Lập bảng tiến độ đơn hàng và bảng tiến độ chế tạo', in:['HAC-HC-01'], out:['Tiến độ đơn hàng','Tiến độ chế tạo'] },
+  { id:'11', p:2, col:4, role:'nvpkt',kind:'gate', s:'Kiểm tra bản vẽ', title:'Kiểm tra bản vẽ', in:['Bản vẽ'], ng:'Bản vẽ chưa đạt: báo Kinh doanh gửi lại' },
+  { id:'12', p:2, col:5, role:'nvpkt',kind:'gate', s:'Kiểm tra bảng vật tư', title:'Kiểm tra bảng tổng hợp vật tư phụ kiện và trọng lượng, so sánh với bảng báo giá', in:['HAC-PKT-07','HAC-PKT-08','Báo giá'], ng:'Lệch báo giá: báo Kinh doanh gửi lại' },
+  { id:'13', p:2, col:4, role:'tppkt',s:'Xác nhận TL-QLCL với khách', title:'Xác nhận tài liệu quản lý chất lượng với khách hàng', with:'Khách hàng', open:'Bước 13 nối vào bước 17 là suy luận' },
+  { id:'14', p:2, col:6, role:'pgd',  kind:'gate', s:'Duyệt tiến độ', title:'Phê duyệt bảng tiến độ đơn hàng và bảng tiến độ chế tạo', in:['Tiến độ đơn hàng','Tiến độ chế tạo'], out:['Tiến độ đơn hàng','Tiến độ chế tạo'], ng:'Chưa duyệt: PC lập lại' },
+  { id:'15', p:2, col:6, role:'tppkt',kind:'gate', s:'Duyệt bản vẽ, bảng vật tư', title:'Phê duyệt, ban hành bản vẽ cuối cùng; phê duyệt bảng tổng hợp vật tư phụ kiện và bảng tổng hợp trọng lượng', in:['Bản vẽ','HAC-PKT-07','HAC-PKT-08'], out:['Bản vẽ','HAC-PKT-07','HAC-PKT-08'], ng:'Chưa duyệt: Kinh doanh gửi lại' },
+  { id:'16', p:2, col:7, role:'pc',   s:'Soạn hướng dẫn chế tạo', title:'Soạn hướng dẫn chế tạo (HDCT)', in:['Bản vẽ','Tiến độ chế tạo'], out:['HAC-PKT-04'] },
+  { id:'17', p:2, col:8, role:'pc',   s:'Soạn TL-QLCL và ITP', title:'Soạn tài liệu quản lý chất lượng và ITP', in:['Bản vẽ'], out:['HAC-PKT-05','ITP'] },
+  { id:'18', p:2, col:8, role:'pgd',  kind:'gate', s:'Duyệt hướng dẫn chế tạo', title:'Kiểm tra và phê duyệt HDCT', in:['HAC-PKT-04'], out:['HAC-PKT-04'], ng:'Chưa duyệt: PC soạn lại' },
+  { id:'19', p:2, col:9, role:'qc',   s:'Nhận TL-QLCL và ITP', title:'Nhận tài liệu quản lý chất lượng và ITP', in:['HAC-PKT-05','ITP'] },
+
+  { id:'20', p:3, col:1, role:'mh',   s:'Nhập NVL, chi tiết, phụ kiện', title:'Nhập nguyên vật liệu, chi tiết, phụ kiện', in:['HAC-PKT-07'], out:['HAC-KT-01'] },
+  { id:'21', p:3, col:2, role:'qa',   kind:'gate', s:'Kiểm tra NVL đầu vào', title:'Kiểm tra NVL, chi tiết, phụ kiện đầu vào', in:['HAC-KT-01','HAC-PKT-05'], out:['HAC-KT-01'], ng:'Không đạt: trả Mua hàng nhập lại' },
+  { id:'22', p:3, col:3, role:'kho',  s:'Nhập kho', title:'Nhập kho', in:['HAC-KT-01'], out:['VT-02'] },
+  { id:'23', p:3, col:4, role:'pc',   s:'Đề xuất NVL cho sản xuất', title:'Theo dõi khối lượng và đề xuất NVL chính - phụ, chi tiết phụ kiện cho sản xuất', in:['VT-02','HAC-PKT-07'], out:['HAC-KT-05'] },
+  { id:'24', p:3, col:5, role:'pc',   s:'Lưu hồ sơ nhập kho', title:'Tập hợp và lưu hồ sơ', with:'P. HC-NS', in:['HAC-KT-01','VT-02','HAC-KT-05'] },
+
+  { id:'25', p:4, col:1, role:'pc',   s:'Phát hành hồ sơ sản xuất', title:'Lập và phân phối hồ sơ sản xuất', in:['Bản vẽ','HAC-PKT-04','HAC-PKT-05','Tiến độ chế tạo'], out:['Hồ sơ sản xuất'] },
+  { id:'26', p:4, col:2, role:'pgd',  kind:'meet', s:'Họp triển khai sản xuất', title:'Họp triển khai sản xuất', with:'Bộ phận Sản xuất, P. Kỹ thuật, NV. PC', in:['Hồ sơ sản xuất'], out:['HAC-HC-01'] },
+  { id:'27', p:4, col:3, role:'pc',   s:'Chuẩn bị sản xuất', title:'Chuẩn bị sản xuất', in:['Hồ sơ sản xuất','HAC-KT-05'] },
+  { id:'28', p:4, col:4, role:'sx',   s:'Bắt đầu sản xuất', title:'Bắt đầu sản xuất', in:['Hồ sơ sản xuất'] },
+
+  { id:'29', p:5, col:1, role:'nvkd', s:'Nhận yêu cầu thay đổi', title:'Nhận thông tin thay đổi từ khách hàng', with:'Khách hàng, P. Kỹ thuật', in:['Thông tin thay đổi'] },
+  { id:'30', p:5, col:2, role:'nvkd', s:'Trao đổi phương án với khách', title:'Trao đổi với khách hàng', with:'Khách hàng, P. Kỹ thuật' },
+  { id:'31', p:5, col:3, role:'nvkd', s:'Nhận phản hồi của khách', title:'Nhận kết quả phản hồi từ khách hàng', with:'Khách hàng', in:['Phản hồi khách'] },
+  { id:'32', p:5, col:4, role:'nvkd', s:'Gửi yêu cầu sản xuất mới', title:'Gửi lại yêu cầu thay đổi và bản vẽ mới', out:['BM-KD-05','Bản vẽ'] },
+  { id:'33', p:5, col:5, role:'pc',   s:'Sửa HDCT và tiến độ', title:'Sửa đổi HDCT, tiến độ đơn hàng và tiến độ chế tạo', in:['BM-KD-05','Bản vẽ'], out:['HAC-PKT-04','Tiến độ đơn hàng','Tiến độ chế tạo'] },
+  { id:'34', p:5, col:6, role:'pgd',  kind:'gate', s:'Duyệt lại HDCT, tiến độ', title:'Phê duyệt lại HDCT, tiến độ đơn hàng và tiến độ chế tạo', in:['HAC-PKT-04','Tiến độ đơn hàng','Tiến độ chế tạo'], out:['HAC-PKT-04'], ng:'Chưa duyệt: PC sửa lại' },
+  { id:'35', p:5, col:7, role:'pc',   s:'Phát hành hồ sơ sản xuất mới', title:'Lập và phân phối hồ sơ sản xuất thay đổi', out:['Hồ sơ sản xuất'] },
+  { id:'36', p:5, col:8, role:'pgd',  kind:'meet', s:'Họp triển khai thay đổi', title:'Họp triển khai sản xuất thay đổi', with:'Bộ phận Sản xuất, P. Kỹ thuật, NV. PC', in:['Hồ sơ sản xuất'], out:['HAC-HC-01'] },
+  { id:'37', p:5, col:9, role:'sx',   s:'Tiếp tục sản xuất', title:'Tiếp tục sản xuất', in:['Hồ sơ sản xuất'] },
+
+  { id:'38', p:6, col:1, role:'pc',   s:'Soạn Inspection Report', title:'Soạn Inspection Report', in:['ITP','HAC-PKT-05'], out:['Inspection Report'] },
+  { id:'39', p:6, col:1, role:'nvpkt',s:'Vẽ bản vẽ đóng kiện', title:'Vẽ bản vẽ đóng kiện', in:['Bản vẽ'], out:['Bản vẽ đóng kiện'] },
+  { id:'40', p:6, col:1, role:'sx',   s:'Kết thúc sản xuất', title:'Kết thúc sản xuất' },
+  { id:'41', p:6, col:2, role:'tppkt',kind:'gate', s:'Duyệt bản vẽ đóng kiện', title:'Kiểm tra, phê duyệt bản vẽ đóng kiện và mẫu Inspection Report', in:['Bản vẽ đóng kiện','Inspection Report'], out:['Bản vẽ đóng kiện','Inspection Report'], ng:'Chưa đạt: vẽ lại, soạn lại' },
+  { id:'42', p:6, col:3, role:'qc',   kind:'gate', s:'Nghiệm thu nội bộ', title:'Kiểm tra, sửa lỗi, nghiệm thu nội bộ', in:['ITP','HAC-PKT-05','Inspection Report'], out:['HAC-PKT-05','Inspection Report'], ng:'Lỗi: sửa rồi kiểm lại' },
+  { id:'43a',p:6, col:4, role:'tppkt',kind:'gate', s:'Kiểm tra check sheet, IR', title:'Kiểm tra check sheet và Inspection Report', in:['HAC-PKT-05','Inspection Report'], ng:'Chưa đạt: QC kiểm lại' },
+  { id:'43b',p:6, col:5, role:'pgd',  kind:'gate', s:'Duyệt check sheet, IR', title:'Phê duyệt check sheet và Inspection Report', in:['HAC-PKT-05','Inspection Report'], out:['HAC-PKT-05','Inspection Report'], ng:'Chưa duyệt: QC kiểm lại' },
+  { id:'44', p:6, col:6, role:'kh',   kind:'gate', s:'Nghiệm thu với khách', title:'Khách hàng nghiệm thu', with:'NV. PC, Bộ phận Sản xuất', in:['Inspection Report'], out:['Biên bản nghiệm thu'], ng:'Khách không chấp nhận: QC sửa lỗi, kiểm lại' },
+
+  { id:'45', p:7, col:1, role:'pc',   s:'Đóng gói, đóng kiện', title:'Đóng gói, đóng kiện, lập Packing List', with:'NV. QC', in:['Bản vẽ đóng kiện'], out:['Packing List'] },
+  { id:'46a',p:7, col:2, role:'nvkt', s:'Lập chứng từ giao hàng', title:'Chuẩn bị xuất hàng: biên bản giao hàng, phiếu xuất kho', in:['Packing List'], out:['Biên bản giao hàng','Phiếu xuất kho'] },
+  { id:'46b',p:7, col:2, role:'nvkd', s:'Lập chứng từ xuất khẩu', title:'Chuẩn bị xuất hàng: tờ khai hải quan, C/O, Invoice', in:['Packing List'], out:['Tờ khai hải quan','C/O','Invoice'] },
+  { id:'47', p:7, col:3, role:'sx',   s:'Xuất hàng', title:'Xuất hàng', with:'NV. PC', in:['Phiếu xuất kho','Packing List'], out:['HAC-PKT-06'] },
+  { id:'48', p:7, col:4, role:'hcns', kind:'meet', s:'Họp tổng kết đơn hàng', title:'Họp tổng kết đơn hàng', out:['HAC-HC-01'] },
+  { id:'49', p:7, col:5, role:'nvkt', s:'Soạn hồ sơ thanh toán', title:'Soạn hồ sơ thanh toán', in:['Invoice','Biên bản giao hàng'], out:['Hồ sơ thanh toán'] },
+  { id:'50', p:7, col:6, role:'nvkt', s:'Tổng hợp chi phí đơn hàng', title:'Tổng hợp chi phí đơn hàng theo HAC-KT-04', in:['HAC-KT-05','VT-02','Hồ sơ thanh toán'], out:['HAC-KT-04'] },
+  { id:'51', p:7, col:7, role:'hcns', s:'Cập nhật, lưu hồ sơ', title:'Cập nhật và lưu hồ sơ', with:'NV. PC', in:['Toàn bộ hồ sơ đơn hàng'] },
+  { id:'52', p:7, col:8, role:'hcns', kind:'term', s:'Kết thúc', title:'Kết thúc quy trình' },
+];
+
+// Đi tiếp: [từ, đến, nhãn, 'right' nếu đi vòng lề phải]
+const FLOWS = [
+  ['1','2'],['2','3'],['3','4'],['4','5'],['5','6'],['5','7'],
+  ['7','8'],['8','9'],['9','10'],['9','11'],['9','13'],['11','12'],['10','14'],['12','15'],['14','16'],['15','16'],['16','17'],['16','18'],['13','17'],['17','19'],['18','20'],['19','20'],
+  ['20','21'],['21','22'],['22','23'],['23','24'],['24','25'],
+  ['25','26'],['26','27'],['27','28'],['28','29','khách đổi yêu cầu'],['28','38','không đổi yêu cầu','right'],
+  ['29','30'],['30','31'],['31','32'],['32','33'],['33','34'],['34','35'],['35','36'],['36','37'],['37','38'],['37','39'],['37','40'],
+  ['38','41'],['39','41'],['40','42'],['41','42'],['42','43a'],['43a','43b'],['43b','44'],['44','45'],
+  ['45','46a'],['45','46b'],['46a','47'],['46b','47'],['47','48'],['48','49'],['49','50'],['50','51'],['51','52'],
+];
+// NG quay về: [từ cổng, về bước]
+const NGS = [['11','7'],['12','7'],['14','10'],['15','7'],['18','16'],['21','20'],['34','33'],['41','38'],['41','39'],['43a','42'],['43b','42'],['44','42']];
+
+
+// Trên ERPNext v16. Mỗi bước một dòng: [mức, đối tượng, ghi chú]. Mức: core = có sẵn, cfg = cấu hình trong giao diện, app = app Frappe riêng, ext = ngoài ERPNext.
+// Nguồn: 171 phép thử 28/08/2026 và báo cáo fit-erpnext-va-chi-phi-260902.
+const ERP = {
+  '1':['core','Lead'], '2':['core','Opportunity'],
+  '3':['cfg','DocType Bảng bóc tách','PKT-01, 07, 08 gộp một DocType, bảng con vật tư có kg'],
+  '4':['core','Quotation','mẫu in theo mẫu HAC'],
+  '5':['cfg','Sales Order + Bản vẽ','số PO khách trên Sales Order; DocType Bản vẽ có phiên bản, đã thử nộp, huỷ, chặn bản cũ'],
+  '6':['core','Payment Request','gắn trên Sales Order; kế toán thật vẫn ở MISA'],
+  '7':['cfg','DocType Yêu cầu sản xuất'],
+  '8':['cfg','Workflow Sales Order','trường PC phụ trách trên Sales Order'],
+  '9':['cfg','DocType Biên bản họp'],
+  '10':['cfg','DocType Tiến độ','đã thử Workflow 4 trạng thái'],
+  '11':['cfg','Workflow Bản vẽ'], '12':['cfg','Workflow Bảng bóc tách'],
+  '13':['core','Communication','cần tài khoản email IMAP'],
+  '14':['cfg','Workflow Tiến độ','Server Script chặn nộp Work Order khi tiến độ chưa duyệt, đã thử đạt'],
+  '15':['cfg','Workflow Bản vẽ','ban hành bản cuối, bản cũ tự hết hiệu lực'],
+  '16':['cfg','DocType HDCT'], '17':['cfg','QI Template + DocType ITP','check sheet là Quality Inspection Template'],
+  '18':['cfg','Workflow HDCT'], '19':['core','ToDo'],
+  '20':['core','Purchase Order','nhận hàng ghi Purchase Receipt'],
+  '21':['core','Quality Inspection','không phiếu hoặc không đạt thì chặn nhập kho, đã thử'],
+  '22':['core','Purchase Receipt','mẫu in VT-02'],
+  '23':['core','Material Request','loại chuyển cho sản xuất, mẫu in KT-05'],
+  '24':['core','Đính kèm trên Project'],
+  '25':['cfg','DocType Phân phối hồ sơ','ToDo xác nhận đã nhận, đã thử'],
+  '26':['cfg','DocType Biên bản họp'],
+  '27':['core','Work Order, Stock Entry'],
+  '28':['app','Work Order, Job Card','lệnh và thẻ có sẵn; bấm giờ theo người, một người một việc, màn hình điện thoại là app riêng và PWA'],
+  '29':['cfg','DocType Yêu cầu thay đổi'], '30':['cfg','Communication','email và ghi chú gắn vào Yêu cầu thay đổi'], '31':['cfg','DocType Yêu cầu thay đổi'],
+  '32':['cfg','Yêu cầu sản xuất, Bản vẽ','phiên bản mới, bản cũ hết hiệu lực'],
+  '33':['cfg','HDCT, Tiến độ','phiên bản mới'],
+  '34':['cfg','Workflow HDCT, Tiến độ'], '35':['cfg','DocType Phân phối hồ sơ'], '36':['cfg','DocType Biên bản họp'],
+  '37':['app','Work Order, Job Card','như bước 28'],
+  '38':['cfg','Quality Inspection','mẫu in Inspection Report theo mẫu khách'],
+  '39':['cfg','DocType Bản vẽ','loại đóng kiện'],
+  '40':['core','Work Order','hoàn thành'],
+  '41':['cfg','Workflow Bản vẽ, QI'],
+  '42':['core','Non Conformance','kèm Quality Inspection; NCR chỉ 8 trường, phải thêm mức độ, lô, ảnh'],
+  '43a':['cfg','Workflow QI','Quality Inspection, cấp kiểm'], '43b':['cfg','Workflow QI','Quality Inspection, cấp duyệt'],
+  '44':['cfg','DocType Nghiệm thu','Biên bản nghiệm thu có trường chữ ký; ký điện tử và cổng khách là giai đoạn 3'],
+  '45':['core','Packing Slip'], '46a':['core','Delivery Note','hai mẫu in'],
+  '46b':['ext','VNACCS, ecosys','Invoice là Sales Invoice có sẵn; tờ khai và C/O làm ngoài, chỉ đính kèm'],
+  '47':['core','Delivery Note','nộp và mẫu in PKT-06; kiểm cuối chặn giao hàng, đã thử'],
+  '48':['cfg','DocType Biên bản họp'],
+  '49':['core','Sales Invoice','kèm Payment Request'],
+  '50':['cfg','Script Report','KT-04; chỉ đúng nếu vật tư và giờ công đi qua ERPNext'],
+  '51':['core','Project','đính kèm'], '52':['core','Project','đóng'],
+};
+const ERP_LV = { core:'Có sẵn', cfg:'Cấu hình', app:'App riêng', ext:'Ngoài ERPNext' };
+
+// Hồ sơ nào là đối tượng nào trên ERPNext.
+const FORMS_ERP = {
+  'Yêu cầu báo giá':'Lead, Opportunity', 'Báo giá':'Quotation', 'PO':'Sales Order', 'HĐKT':'Sales Order, mẫu in', 'Đề nghị tạm ứng':'Payment Request',
+  'Bản vẽ':'DocType Bản vẽ', 'Bản vẽ đóng kiện':'DocType Bản vẽ', 'BM-KD-05':'DocType Yêu cầu sản xuất', 'HAC-HC-01':'DocType Biên bản họp',
+  'Tiến độ đơn hàng':'DocType Tiến độ', 'Tiến độ chế tạo':'DocType Tiến độ',
+  'HAC-PKT-01':'DocType Bảng bóc tách', 'HAC-PKT-07':'DocType Bảng bóc tách', 'HAC-PKT-08':'DocType Bảng bóc tách',
+  'HAC-PKT-04':'DocType HDCT', 'HAC-PKT-05':'Quality Inspection Template', 'ITP':'DocType ITP',
+  'HAC-KT-01':'Quality Inspection đầu vào', 'VT-02':'Purchase Receipt, mẫu in', 'HAC-KT-05':'Material Request, mẫu in',
+  'Hồ sơ sản xuất':'DocType Phân phối hồ sơ', 'Thông tin thay đổi':'DocType Yêu cầu thay đổi', 'Phản hồi khách':'DocType Yêu cầu thay đổi',
+  'Inspection Report':'Quality Inspection, mẫu in', 'Biên bản nghiệm thu':'DocType Biên bản nghiệm thu',
+  'Packing List':'Packing Slip', 'Biên bản giao hàng':'Delivery Note, mẫu in', 'Phiếu xuất kho':'Delivery Note, mẫu in', 'HAC-PKT-06':'Delivery Note, mẫu in',
+  'Tờ khai hải quan':'ngoài, đính kèm', 'C/O':'ngoài, đính kèm', 'Invoice':'Sales Invoice', 'Hồ sơ thanh toán':'Payment Request', 'HAC-KT-04':'Script Report',
+};
+
+
+/* =====================================================================
+   VẼ. Không cần sửa khi chỉ đổi dữ liệu.
+   ===================================================================== */
+const PHW=64, IDXW=260, NGW=62, CW=240, RGAP=56, LW=190, RH=150, NH=92, PGAP=48, HEAD=60, R=16, INSET=12;
+const X0=PHW+NGW;                      // mép trái cột phòng ban đầu tiên
+const DX=X0+DEPTS.length*CW+RGAP;      // mép trái vùng hồ sơ
+const roleOf={}; DEPTS.forEach(d=>d.roles.forEach(([id,name])=>roleOf[id]={id,name,dept:d}));
+const deptIdx=Object.fromEntries(DEPTS.map((d,i)=>[d.id,i]));
+const S=Object.fromEntries(STEPS.map(s=>[s.id,s]));
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const ICON={
+  gate:'<svg class="ic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.2 3L13 4.5"/></svg>',
+  meet:'<svg class="ic" viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="5" r="2.3"/><circle cx="11" cy="5.5" r="2"/><path d="M1.5 13c0-2.6 1.8-4.2 4-4.2s4 1.6 4 4.2z"/><path d="M9.6 12.6c.2-1.8 1-3 2.2-3.5 1.6.2 2.7 1.4 2.7 3.5z"/></svg>',
+};
+
+// vết hồ sơ: mỗi hồ sơ một khoảng từ hàng đầu tiên xuất hiện tới hàng cuối; xếp làn, làn được dùng lại khi hồ sơ trước đã xong
+function traces(){
+  const ev={};
+  STEPS.forEach((s,i)=>{ (s.out||[]).forEach(f=>(ev[f]=ev[f]||{})[i]='out'); (s.in||[]).forEach(f=>{ const e=ev[f]=ev[f]||{}; if(!e[i]) e[i]='in'; }); });
+  const tr=Object.entries(ev).map(([f,e])=>{ const rows=Object.keys(e).map(Number).sort((a,b)=>a-b); return {f,e,rows,lo:rows[0],hi:rows[rows.length-1]}; }).sort((a,b)=>a.lo-b.lo||a.hi-b.hi);
+  const lanes=[]; tr.forEach(t=>{ let k=lanes.findIndex(h=>h<t.lo); if(k<0){ k=lanes.length; lanes.push(t.hi); } else lanes[k]=t.hi; t.lane=k; });
+  return {tr,n:lanes.length};
+}
+const TR=traces();
+const GRIDW=DX+TR.n*LW+16;
+
+// vị trí: mỗi bước một hàng theo thứ tự STEPS; đổi Pha thì chừa một khe
+let H=0, phases=[];
+function layout(){
+  let y=0; let cur=null;
+  STEPS.forEach((s,i)=>{
+    if(s.p!==cur){ if(cur!==null){ phases[phases.length-1].y1=y; y+=PGAP; } cur=s.p; phases.push({ph:PHASES.find(p=>p.id===s.p),y0:y}); }
+    s.row=i; s.rowTop=y; s.rowBot=y+RH; s.top=y+(RH-NH)/2; s.bottom=s.top+NH; s.cy=s.top+NH/2;
+    s.ci=deptIdx[roleOf[s.role].dept.id]; s.left=X0+s.ci*CW+INSET; s.right=s.left+CW-2*INSET; s.cx=s.left+(CW-2*INSET)/2;
+    y+=RH;
+  });
+  phases[phases.length-1].y1=y; H=y;
+}
+const inCol=(ci,r0,r1)=>STEPS.some(s=>s.ci===ci&&s.row>r0&&s.row<r1);
+
+function poly(pts){
+  let d=`M${pts[0][0]},${pts[0][1]}`;
+  for(let i=1;i<pts.length-1;i++){
+    const [x0,y0]=pts[i-1],[x1,y1]=pts[i],[x2,y2]=pts[i+1];
+    const l1=Math.hypot(x1-x0,y1-y0), l2=Math.hypot(x2-x1,y2-y1);
+    if(l1<0.5||l2<0.5) continue;
+    const r=Math.min(R,l1/2,l2/2);
+    d+=` L${x1-(x1-x0)/l1*r},${y1-(y1-y0)/l1*r} Q${x1},${y1} ${x1+(x2-x1)/l2*r},${y1+(y2-y1)/l2*r}`;
+  }
+  const [xe,ye]=pts[pts.length-1]; return d+` L${xe},${ye}`;
+}
+const P=(d,cls)=>`<path d="${d}" fill="none" stroke="${cls==='ng'?'#E06B6B':'#7B6E62'}" stroke-width="${cls==='ng'?1.8:2.4}" stroke-linecap="round" ${cls==='ng'?'stroke-dasharray="5 4" class="ng"':''} marker-end="url(#${cls==='ng'?'ang':'a'})"/>`;
+const pill=(x,y,lab)=>{ const w=lab.length*7.4+22; return `<g class="pill"><rect x="${x-w/2}" y="${y-11}" width="${w}" height="22" rx="11"/><text x="${x}" y="${y+4.5}" text-anchor="middle">${esc(lab)}</text></g>`; };
+
+function edges(){
+  let out='';
+  FLOWS.forEach(([a,b,lab,via])=>{
+    const A=S[a],B=S[b]; const gy=A.rowBot; // khe dưới hàng A
+    let d, lx, ly;
+    if(via==='right'){ const x=X0+DEPTS.length*CW+RGAP/2; d=poly([[A.right+1,A.cy],[x,A.cy],[x,B.cy],[B.right+1,B.cy]]); lx=(A.right+x)/2; ly=A.cy; }
+    else if(B.row===A.row+1 || !inCol(B.ci,A.row,B.row)){ // đi thẳng xuống, hoặc cột đích trống giữa đường
+      d = A.ci===B.ci ? `M${A.cx},${A.bottom+1} L${B.cx},${B.top-1}` : poly([[A.cx,A.bottom+1],[A.cx,gy],[B.cx,gy],[B.cx,B.top-1]]);
+      lx=(A.cx+B.cx)/2; ly=gy;
+    } else { // cột đích có ô chắn: chạy dọc khe trái cột đích, vào cạnh trái
+      const x=X0+B.ci*CW-6; d=poly([[A.cx,A.bottom+1],[A.cx,gy],[x,gy],[x,B.cy],[B.left-1,B.cy]]); lx=x+8; ly=gy+64;
+    }
+    out+=P(d,'flow');
+    if(lab) out+=pill(lx,ly,lab);
+  });
+  // NG: ra cạnh trái cổng, chạy lề trái, lên hàng đích, vào cạnh trái
+  const sorted=[...NGS].map(([a,b])=>({A:S[a],B:S[b]})).sort((p,q)=>(p.A.row-p.B.row)-(q.A.row-q.B.row));
+  const used=[];
+  sorted.forEach(({A,B})=>{
+    let k=0; while(used.some(u=>u.k===k&&!(u.lo>A.row||u.hi<B.row))) k++;
+    used.push({k,lo:B.row,hi:A.row});
+    const x=X0-16-k*11;
+    out+=P(poly([[A.left-1,A.cy+12],[x,A.cy+12],[x,B.cy-12],[B.left-1,B.cy-12]]),'ng');
+  });
+  return out;
+}
+
+function erpTag(s){ const e=ERP[s.id]; if(!e) return ''; return `<span class="erp ${e[0]}" title="${esc(ERP_LV[e[0]])}: ${esc(e[1])}${e[2]?' · '+esc(e[2]):''}">${esc(e[1])}</span>`; }
+function build(){
+  let h=`<div class="colhead" style="width:${GRIDW}px"><div class="h side phh" style="width:${PHW}px"><b>Pha</b></div><div class="h side idxh" style="left:${PHW}px;width:${IDXW}px;margin-right:-${IDXW}px"><b>Bước</b></div><div class="h side" style="width:${NGW}px"></div>`;
+  DEPTS.forEach(d=>h+=`<div class="h" style="width:${CW}px"><i class="bar" style="background:${d.color}"></i><b>${esc(d.name)}</b><small>${esc(d.roles.map(r=>r[1]).join(' · '))}</small></div>`);
+  h+=`<div class="h side" style="width:${RGAP}px"></div><div class="h side" style="width:${TR.n*LW}px"><b>Hồ sơ</b><small>Đậm: bước này tạo hoặc cập nhật. Viền: bước này đưa vào dùng. Đường chấm nối các lần của cùng một hồ sơ.</small></div></div>`;
+  h+=`<div class="body" style="height:${H}px;width:${GRIDW}px">`;
+  DEPTS.forEach((d,i)=>h+=`<div class="colbg${i%2?' alt':''}" style="left:${X0+i*CW}px;width:${CW}px"></div>`);
+  STEPS.forEach(s=>h+=`<div class="rowline" style="top:${s.rowBot}px"></div>`);
+  phases.forEach((b,i)=>{ if(i) h+=`<div class="phsep" style="top:${b.y0-PGAP/2}px"></div>`;
+    h+=`<div class="ph" id="pha-${b.ph.id}" data-p="${b.ph.id}" style="top:${b.y0}px;height:${b.y1-b.y0}px;width:${GRIDW}px"><div class="lbl" style="width:${PHW-10}px;background:${b.ph.color}">Pha ${b.ph.id}<small>${esc(b.ph.name)}</small>${b.ph.cond?`<span class="tag">chỉ khi khách đổi yêu cầu</span>`:''}</div></div>`; });
+  h+=`<div class="rowsel" id="rowsel"></div>`;
+  h+=`<div class="idxwrap" style="width:${GRIDW}px;height:${H}px"><div class="idx" style="left:${PHW}px;width:${IDXW}px">`;
+  STEPS.forEach(s=>{ const r=roleOf[s.role]; h+=`<div class="ir" data-id="${s.id}" style="top:${s.rowTop}px;height:${RH}px"><span class="n" style="background:${r.dept.color}">${s.id}</span><span class="it">${esc(s.s)}</span></div>`; });
+  h+=`</div></div>`;
+  h+=`<svg class="edges" width="${GRIDW}" height="${H}"><defs>
+    <marker id="a" markerWidth="11" markerHeight="11" refX="9.5" refY="5.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0.5 L11,5.5 L0,10.5 z" fill="#7B6E62"/></marker>
+    <marker id="ang" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L9,4.5 L0,9 z" fill="#E06B6B"/></marker></defs>${edges()}</svg>`;
+  STEPS.forEach(s=>{
+    const kind=s.kind||'step', r=roleOf[s.role], W=CW-2*INSET;
+    if(kind==='term'){ h+=`<div class="node term" data-id="${s.id}" style="left:${s.left+16}px;top:${s.top+6}px;width:${W-32}px;height:${NH-12}px"><div class="tx"><div class="t">${esc(s.s)}</div></div>${erpTag(s)}</div>`; return; }
+    h+=`<div class="node ${kind}" data-id="${s.id}" style="left:${s.left}px;top:${s.top}px;width:${W}px;height:${NH}px" title="${esc(s.title)}">
+      ${kind==='gate'?`<svg class="hex" viewBox="0 0 ${W} ${NH}" preserveAspectRatio="none"><polygon points="18,1 ${W-18},1 ${W-1},${NH/2} ${W-18},${NH-1} 18,${NH-1} 1,${NH/2}" fill="#FFF7E0" stroke="#E9A825" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>`:''}
+      <div class="n" style="background:${r.dept.color}">${s.id}</div>${ICON[kind]||''}<div class="tx"><div class="t">${esc(s.s)}</div>${r.dept.roles.length>1?`<div class="r">${esc(r.name)}</div>`:''}</div>${erpTag(s)}</div>`;
+  });
+  TR.tr.forEach(t=>{
+    const x=DX+t.lane*LW, y0=STEPS[t.lo].cy, y1=STEPS[t.hi].cy;
+    h+=`<div class="trace" data-f="${esc(t.f)}" style="left:${x}px;top:${y0}px;width:${LW}px;height:${Math.max(1,y1-y0)}px">${t.hi>t.lo?'<i class="tl"></i>':''}`;
+    t.rows.forEach(r=>{ const s=STEPS[r]; h+=`<span class="doc ${t.e[r]}" style="top:${s.cy-y0}px" title="${esc(FORMS[t.f]||t.f)} · bước ${s.id} ${t.e[r]==='out'?'tạo hoặc cập nhật':'đưa vào dùng'}">${esc(t.f)}</span>`; });
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+  document.getElementById('chart').innerHTML=h;
+}
+
+function hiliteDocs(s,cls){ const l=s?[...(s.in||[]),...(s.out||[])]:[]; document.querySelectorAll('.trace').forEach(t=>t.classList.toggle(cls,l.includes(t.dataset.f))); }
+
+function registers(){
+  const created={}, used={};
+  STEPS.forEach(s=>{ (s.out||[]).forEach(f=>(created[f]=created[f]||[]).push(s.id)); (s.in||[]).forEach(f=>(used[f]=used[f]||[]).push(s.id)); });
+  const u=a=>[...new Set(a||[])].join(', ');
+  let h=`<section class="card reg"><h2>Sổ biểu mẫu, hồ sơ</h2><table><tr><th>Mã / tên</th><th>Là gì</th><th>Tạo ở bước</th><th>Dùng ở bước</th><th>Trên ERPNext</th></tr>`;
+  Object.keys(FORMS).forEach(f=>h+=`<tr><td class="c">${esc(f)}</td><td>${esc(FORMS[f])}</td><td>${u(created[f])||'<span style="color:var(--muted)">từ khách</span>'}</td><td>${u(used[f])}</td><td>${esc(FORMS_ERP[f]||'')}</td></tr>`);
+  h+=`</table></section><section class="card reg"><h2>Sổ cổng kiểm tra, phê duyệt</h2><table><tr><th>Bước</th><th>Người quyết định</th><th>Kiểm gì</th><th>Không đạt</th><th>Quay về bước</th></tr>`;
+  STEPS.filter(s=>s.kind==='gate').forEach(s=>{ const r=roleOf[s.role]; const to=NGS.filter(n=>n[0]===s.id).map(n=>n[1]);
+    h+=`<tr><td class="c">${s.id}</td><td style="color:${r.dept.color};font-weight:600">${esc(r.name)}</td><td>${esc(s.title)}</td><td>${esc(s.ng||'')}</td><td>${to.join(', ')||'<span style="color:var(--muted)">làm lại tại chỗ</span>'}</td></tr>`; });
+  const cnt={}; STEPS.forEach(s=>{ const e=ERP[s.id]; if(e) cnt[e[0]]=(cnt[e[0]]||0)+1; });
+  h+=`</table></section><section class="card reg"><h2>Sổ ánh xạ ERPNext v16</h2><p style="color:var(--muted);margin:0 0 10px">${['core','cfg','app','ext'].map(k=>`<span class="erp ${k}">${cnt[k]||0}</span>${esc(ERP_LV[k])}`).join(' &nbsp; ')}. Nguồn: 171 phép thử ngày 28/08/2026.</p><table><tr><th>Bước</th><th>Việc</th><th>Trên ERPNext</th><th>Mức</th><th>Ghi chú</th></tr>`;
+  STEPS.forEach(s=>{ const e=ERP[s.id]; if(!e) return; h+=`<tr><td class="c">${s.id}</td><td>${esc(s.s)}</td><td><span class="erp ${e[0]}">${esc(e[1])}</span></td><td>${esc(ERP_LV[e[0]])}</td><td>${esc(e[2]||'')}</td></tr>`; });
+  h+=`</table></section>`;
+  document.getElementById('regs').innerHTML=h;
+}
+
+function openDrawer(id){
+  const s=S[id]; const r=roleOf[s.role];
+  document.querySelectorAll('.node.sel').forEach(n=>n.classList.remove('sel'));
+  document.querySelector(`.node[data-id="${id}"]`).classList.add('sel');
+  const kind={gate:'Cổng kiểm tra, phê duyệt',meet:'Cuộc họp',term:'Điểm đầu, cuối'}[s.kind]||'Bước công việc';
+  const ph=PHASES.find(p=>p.id===s.p);
+  const nexts=FLOWS.filter(f=>f[0]===id), prevs=FLOWS.filter(f=>f[1]===id).map(f=>S[f[0]]);
+  const ngto=NGS.filter(n=>n[0]===id).map(n=>S[n[1]]), ngfrom=NGS.filter(n=>n[1]===id).map(n=>S[n[0]]);
+  const docs=(l,cls)=>(l&&l.length)?l.map(f=>`<span class="doc ${cls}">${esc(f)}${FORMS[f]?` <small style="opacity:.75">· ${esc(FORMS[f])}</small>`:''}</span>`).join(''):'<span style="color:var(--muted)">không có</span>';
+  const link=x=>`<span class="nx" data-go="${x.id}">bước ${x.id}: ${esc(x.s)}</span>`;
+  document.getElementById('drc').innerHTML=`
+    <div class="kind">${kind} · Pha ${s.p}: ${esc(ph.name)}</div>
+    <h2>Bước ${s.id}. ${esc(s.title)}</h2>
+    <dl>
+      <dt>Người thực hiện</dt><dd><b style="color:${r.dept.color}">${esc(r.name)}</b> · ${esc(r.dept.name)}${s.with?`<br>Cùng tham gia: ${esc(s.with)}`:''}</dd>
+      <dt>Trên ERPNext</dt><dd>${ERP[s.id]?`${erpTag(s)}<b>${esc(ERP_LV[ERP[s.id][0]])}</b>${ERP[s.id][2]?'<br>'+esc(ERP[s.id][2]):''}`:'<span style="color:var(--muted)">chưa ánh xạ</span>'}</dd>
+      <dt>Hồ sơ đưa vào</dt><dd>${docs(s.in,'in')}</dd>
+      <dt>Hồ sơ tạo ra</dt><dd>${docs(s.out,'')}</dd>
+      ${s.ng?`<dt>Khi không đạt</dt><dd class="ngnote">${esc(s.ng)}${ngto.length?'<br>Quay về: '+ngto.map(link).join(' '):''}</dd>`:''}
+      ${ngfrom.length?`<dt>Bị trả về từ cổng</dt><dd>${ngfrom.map(link).join(' ')}</dd>`:''}
+      <dt>Từ bước</dt><dd>${prevs.length?prevs.map(link).join(' '):'<span style="color:var(--muted)">bắt đầu quy trình</span>'}</dd>
+      <dt>Đi tiếp</dt><dd>${nexts.length?nexts.map(f=>link(S[f[1]])+(f[2]?` <small style="color:var(--muted)">(${esc(f[2])})</small>`:'')).join(' '):'<span style="color:var(--muted)">'+(s.open?esc(s.open):'kết thúc')+'</span>'}</dd>
+      ${s.open?`<dt>Cần rà với HAC</dt><dd class="ngnote">${esc(s.open)}</dd>`:''}
+    </dl>`;
+  document.getElementById('dr').classList.add('open');
+  const rs=document.getElementById('rowsel'); rs.style.display='block'; rs.style.top=s.rowTop+'px'; rs.style.height=RH+'px'; hiliteDocs(s,'hl');
+  document.querySelectorAll('.idx .ir').forEach(n=>n.classList.toggle('sel',n.dataset.id===id));
+  document.querySelectorAll('#drc .nx[data-go]').forEach(e=>e.addEventListener('click',()=>{ openDrawer(e.dataset.go); document.querySelector(`.node[data-id="${e.dataset.go}"]`).scrollIntoView({behavior:'smooth',block:'center'}); }));
+}
+
+
+const wrap=document.getElementById('wrap');
+function render(){
+  layout(); build();
+  document.querySelectorAll('.node[data-id]').forEach(n=>{
+    n.addEventListener('click',()=>openDrawer(n.dataset.id));
+    n.addEventListener('mouseenter',()=>hiliteDocs(S[n.dataset.id],'hl'));
+    n.addEventListener('mouseleave',()=>{ const sel=document.querySelector('.node.sel'); hiliteDocs(sel?S[sel.dataset.id]:null,'hl'); });
+  });
+  document.querySelectorAll('.idx .ir').forEach(n=>n.addEventListener('click',()=>openDrawer(n.dataset.id)));
+  document.querySelectorAll('.ph').forEach(b=>obs.observe(b));
+}
+wrap.addEventListener('scroll',()=>wrap.classList.toggle('xs',wrap.scrollLeft>X0),{passive:true});
+const obs=new IntersectionObserver(es=>{ es.forEach(en=>{ if(en.isIntersecting) document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('here',a.dataset.p===en.target.dataset.p)); }); },{root:wrap,rootMargin:'-30% 0px -60% 0px'});
+render(); registers();
+document.getElementById('nav').innerHTML=PHASES.map(p=>`<a href="#pha-${p.id}" style="background:${p.color};color:${p.color}" data-p="${p.id}" title="${esc(p.name)}"><span style="color:#fff">Pha ${p.id}</span></a>`).join('');
+document.getElementById('drx').addEventListener('click',()=>{ document.getElementById('dr').classList.remove('open'); document.querySelectorAll('.node.sel').forEach(n=>n.classList.remove('sel')); document.getElementById('rowsel').style.display='none'; hiliteDocs(null,'hl'); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.getElementById('drx').click(); });
+document.getElementById('tg-ng').addEventListener('click',e=>{ document.body.classList.toggle('hide-ng'); e.target.classList.toggle('on'); });
+document.getElementById('tg-erp').addEventListener('click',e=>{ document.body.classList.toggle('hide-erp'); e.target.classList.toggle('on'); e.target.textContent=document.body.classList.contains('hide-erp')?'Hiện ERPNext':'Ẩn ERPNext'; });
+document.getElementById('tg-lg').addEventListener('click',e=>{ document.getElementById('lg').classList.toggle('on'); e.target.classList.toggle('on'); });
+document.addEventListener('click',e=>{ if(!e.target.closest('#lg,#tg-lg')){ document.getElementById('lg').classList.remove('on'); document.getElementById('tg-lg').classList.remove('on'); } });
+document.querySelectorAll('#nav a').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); const el=document.getElementById(a.getAttribute('href').slice(1)); wrap.scrollTo({top:el.getBoundingClientRect().top-wrap.getBoundingClientRect().top+wrap.scrollTop-HEAD-8,behavior:'smooth'}); }));
+// kéo chuột để cuộn (thanh cuộn đã ẩn)
+let drag=null;
+wrap.addEventListener('mousedown',e=>{ if(e.button!==0||e.target.closest('.node,.doc,button,a,.nx,table')) return; drag={x:e.clientX,y:e.clientY,l:wrap.scrollLeft,t:wrap.scrollTop}; wrap.classList.add('drag'); });
+window.addEventListener('mousemove',e=>{ if(!drag) return; wrap.scrollLeft=drag.l-(e.clientX-drag.x); wrap.scrollTop=drag.t-(e.clientY-drag.y); });
+window.addEventListener('mouseup',()=>{ drag=null; wrap.classList.remove('drag'); });
+</script>
+</body>
+</html>
